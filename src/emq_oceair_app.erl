@@ -14,7 +14,7 @@
 %% limitations under the License.
 %%--------------------------------------------------------------------
 
--module(emq_plugin_template_app).
+-module(emq_oceair_app).
 
 -behaviour(application).
 
@@ -27,8 +27,8 @@ start(_StartType, _StartArgs) ->
     ok = emqttd_access_control:register_mod(acl, emq_acl_demo, []),
     emq_plugin_template:load(application:get_all_env()),
     {ok, Sup}.
-
+change 
 stop(_State) ->
     ok = emqttd_access_control:unregister_mod(auth, emq_auth_demo),
     ok = emqttd_access_control:unregister_mod(acl, emq_acl_demo),
-    emq_plugin_template:unload().
+    emq_oceair:unload().
