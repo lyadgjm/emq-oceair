@@ -29,8 +29,6 @@ start(_StartType, _StartArgs) ->
     {ok, Sup} = emq_oceair_sup:start_link(),
     emq_oceair:load(application:get_all_env()),
     {ok, Sup}.
-change 
-
 
 %     ok = emqttd_access_control:unregister_mod(auth, emq_auth_demo),
 %     ok = emqttd_access_control:unregister_mod(acl, emq_acl_demo),
