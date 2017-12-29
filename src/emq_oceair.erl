@@ -20,6 +20,8 @@
 
 -export([load/1, unload/0]).
 
+
+
 %% Hooks functions
 
 -export([on_client_connected/3, on_client_disconnected/3]).
@@ -32,6 +34,7 @@
 
 %% Called when the plugin application start
 load(Env) ->
+    msg_handler:msg_handler_init(),
     emqttd:hook('client.connected', fun ?MODULE:on_client_connected/3, [Env]),
     emqttd:hook('client.disconnected', fun ?MODULE:on_client_disconnected/3, [Env]),
     emqttd:hook('client.subscribe', fun ?MODULE:on_client_subscribe/4, [Env]),
@@ -46,18 +49,22 @@ load(Env) ->
 
 on_client_connected(ConnAck, Client = #mqtt_client{client_id = ClientId}, _Env) ->
     io:format("client ~s connected, connack: ~w~n", [ClientId, ConnAck]),
+    oceair:on_client_connected(ClientId),
     {ok, Client}.
 
 on_client_disconnected(Reason, _Client = #mqtt_client{client_id = ClientId}, _Env) ->
     io:format("client ~s disconnected, reason: ~w~n", [ClientId, Reason]),
+    oceair:on_client_disconnnected(ClientId, Reason),
     ok.
 
 on_client_subscribe(ClientId, Username, TopicTable, _Env) ->
     io:format("client(~s/~s) will subscribe: ~p~n", [Username, ClientId, TopicTable]),
+    oceair:on_client_subscribe(ClientId, Username, TopicTable),
     {ok, TopicTable}.
     
 on_client_unsubscribe(ClientId, Username, TopicTable, _Env) ->
     io:format("client(~s/~s) unsubscribe ~p~n", [ClientId, Username, TopicTable]),
+    oceair:on_client_unsubscribe(ClientId, Username, TopicTable),
     {ok, TopicTable}.
 
 on_session_created(ClientId, Username, _Env) ->
@@ -75,19 +82,36 @@ on_session_terminated(ClientId, Username, Reason, _Env) ->
     io:format("session(~s/~s) terminated: ~p.", [ClientId, Username, Reason]).
 
 %% transform message and return
+%% on_message_publish(Message = #mqtt_message{topic = <<"$SYS/", _/binary>>}, _Env) ->
+%%    {ok, Message};
+
+%% on_message_publish(Message = #mqtt_message{topic = <<"$oceairGeneralDevice/", _/binary>>}, _Env) ->
+%%     io:format("publish ~s~n", [emqttd_message:format(Message)]),
+%%    NewMsg =  Message#mqtt_message{payload = msg_handler:handle_msg(Message#mqtt_message.payload)},
+%%    {ok,  NewMsg};
+
+%% on_message_publish(Message, _Env) ->
+%%    NewMsg = oceair:on_message_publish(Message),
+%%    {ok, NewMsg}.
+
+
+%% transform message and return
 on_message_publish(Message = #mqtt_message{topic = <<"$SYS/", _/binary>>}, _Env) ->
     {ok, Message};
 
 on_message_publish(Message, _Env) ->
     io:format("publish ~s~n", [emqttd_message:format(Message)]),
-    {ok, Message}.
+    NewMsg = oceair:on_message_publish(Message),
+    {ok, NewMsg}.
 
 on_message_delivered(ClientId, Username, Message, _Env) ->
     io:format("delivered to client(~s/~s): ~s~n", [Username, ClientId, emqttd_message:format(Message)]),
+    oceair:on_message_delivered(ClientId, Username, Message),
     {ok, Message}.
 
 on_message_acked(ClientId, Username, Message, _Env) ->
     io:format("client(~s/~s) acked: ~s~n", [Username, ClientId, emqttd_message:format(Message)]),
+    oceiar:on_message_acked(ClientId, Username, Message),
     {ok, Message}.
 
 %% Called when the plugin application stop
