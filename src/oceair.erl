@@ -9,7 +9,7 @@
 -on_load(load_nif_so/0).
 
 load_nif_so() ->
-    erlang:load_nif("/opt/pros/erlang/emq-relx/deps/emq_oceair/src/oceair/liboceair", 0).
+    erlang:load_nif("/usr/lib/oceiot/liboceair", 0).
 
 on_client_connected(ClientId) ->
     io:format("nif not loaded"),

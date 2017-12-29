@@ -34,7 +34,6 @@
 
 %% Called when the plugin application start
 load(Env) ->
-    msg_handler:msg_handler_init(),
     emqttd:hook('client.connected', fun ?MODULE:on_client_connected/3, [Env]),
     emqttd:hook('client.disconnected', fun ?MODULE:on_client_disconnected/3, [Env]),
     emqttd:hook('client.subscribe', fun ?MODULE:on_client_subscribe/4, [Env]),
